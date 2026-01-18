@@ -1,0 +1,55 @@
+<ion-content [fullscreen]="true">
+  
+  <div class="login-container">
+    
+    <div class="logo-container">
+      <ion-icon name="person-add"></ion-icon>
+      <h1>Inscription</h1>
+      <p>Rejoignez-nous aujourd'hui</p>
+    </div>
+
+    <ion-card>
+      <ion-card-content>
+        
+        <ion-item lines="none">
+          <ion-icon name="person-outline" slot="start" color="medium"></ion-icon>
+          <ion-input type="text" [(ngModel)]="name" placeholder="Nom complet"></ion-input>
+        </ion-item>
+
+        <ion-item lines="none">
+          <ion-icon name="mail-outline" slot="start" color="medium"></ion-icon>
+          <ion-input type="email" [(ngModel)]="email" placeholder="Email"></ion-input>
+        </ion-item>
+
+        <ion-item lines="none">
+          <ion-icon name="lock-closed-outline" slot="start" color="medium"></ion-icon>
+          <ion-input type="password" [(ngModel)]="password" placeholder="Mot de passe"></ion-input>
+        </ion-item>
+
+        <ion-item lines="none">
+          <ion-icon name="lock-closed-outline" slot="start" color="medium"></ion-icon>
+          <ion-input type="password" [(ngModel)]="confirmPassword" placeholder="Confirmer mot de passe"></ion-input>
+        </ion-item>
+
+        <ion-item lines="none">
+          <ion-icon name="people-outline" slot="start" color="medium"></ion-icon>
+          <ion-select [(ngModel)]="role" placeholder="Votre rôle" interface="popover">
+            <ion-select-option value="patient">Patient</ion-select-option>
+            <ion-select-option value="aidant">Aidant / Infirmier</ion-select-option>
+          </ion-select>
+        </ion-item>
+
+        <ion-button expand="block" (click)="register()" class="btn-login">
+          S'inscrire
+        </ion-button>
+
+        <ion-button expand="block" fill="clear" routerLink="/login" class="btn-register">
+          Déjà un compte ? Se connecter
+        </ion-button>
+
+      </ion-card-content>
+    </ion-card>
+
+  </div>
+
+</ion-content>

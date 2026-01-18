@@ -1,0 +1,65 @@
+// Fond dégradé (comme le login)
+ion-content {
+  --background: #f4f5f8;
+}
+
+// Header personnalisé
+ion-toolbar {
+  --background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --color: white;
+}
+
+// Carte de bienvenue
+.welcome-card {
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+  margin-bottom: 20px;
+  
+  h2 {
+    color: #333;
+    font-weight: 700;
+  }
+  
+  p {
+    color: #666;
+  }
+}
+
+// Bouton d'ajout flottant
+.fab-button {
+  --background: #764ba2;
+  --box-shadow: 0 4px 10px rgba(118, 75, 162, 0.4);
+}
+
+// Cartes de médicaments
+.medication-card {
+  border-radius: 15px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  margin-bottom: 15px;
+  border-left: 5px solid #667eea; // Bordure colorée à gauche
+  
+  ion-card-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #333;
+  }
+  
+  ion-card-subtitle {
+    color: #667eea;
+    font-weight: 600;
+  }
+}
+
+// Badge des heures
+ion-chip {
+  background: rgba(102, 126, 234, 0.1);
+  color: #667eea;
+  font-weight: 600;
+}
+
+// Bouton supprimer
+.btn-delete {
+  color: #eb445a;
+  font-weight: 600;
+}

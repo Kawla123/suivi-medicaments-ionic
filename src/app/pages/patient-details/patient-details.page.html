@@ -1,0 +1,66 @@
+<ion-header>
+  <ion-toolbar color="success">
+    <ion-buttons slot="start">
+      <ion-button (click)="goBack()">
+        <ion-icon name="arrow-back-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Détails du patient</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  
+  <!-- Informations du patient -->
+  <ion-card class="patient-info-card">
+    <ion-card-content>
+      <div class="patient-header">
+        <div class="avatar">
+          {{ patientName?.charAt(0)?.toUpperCase() }}
+        </div>
+        <div>
+          <h2>{{ patientName }}</h2>
+          <p>{{ patientEmail }}</p>
+        </div>
+      </div>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Liste des médicaments -->
+  <div class="section-header">
+    <h2>Médicaments</h2>
+    <ion-badge color="primary">{{ medicaments.length }}</ion-badge>
+  </div>
+
+  <div *ngIf="medicaments.length === 0" class="empty-state">
+    <ion-icon name="medkit-outline" size="large"></ion-icon>
+    <p>Aucun médicament pour ce patient</p>
+  </div>
+
+  <ion-card *ngFor="let med of medicaments" class="med-card">
+    <ion-card-content>
+      <div class="med-header">
+        <div>
+          <h3>💊 {{ med.nom }}</h3>
+          <p class="dosage">{{ med.dosage }}</p>
+          <p class="frequence">🕐 {{ med.frequence }}</p>
+          <p class="heures" *ngIf="med.heures">⏰ {{ med.heures }}</p>
+        </div>
+        <ion-button 
+          fill="clear" 
+          color="danger" 
+          (click)="supprimerMedicament(med.key)">
+          <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+        </ion-button>
+      </div>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Bouton flottant pour ajouter -->
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button color="success" (click)="ajouterMedicament()">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+
+</ion-content>

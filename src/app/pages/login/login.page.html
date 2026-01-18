@@ -1,0 +1,59 @@
+<ion-content [fullscreen]="true">
+  
+  <div class="login-container">
+    
+    <!-- Logo et titre -->
+    <div class="logo-container">
+      <ion-icon name="medkit"></ion-icon>
+      <h1>Suivi Médicaments</h1>
+      <p>Votre santé, notre priorité</p>
+    </div>
+
+    <!-- Carte de connexion -->
+    <ion-card>
+      <ion-card-content>
+        
+        <!-- Email -->
+        <ion-item lines="none">
+          <ion-icon name="mail-outline" slot="start" color="medium"></ion-icon>
+          <ion-input 
+            type="email" 
+            [(ngModel)]="email"
+            placeholder="Email">
+          </ion-input>
+        </ion-item>
+
+        <!-- Mot de passe -->
+        <ion-item lines="none">
+          <ion-icon name="lock-closed-outline" slot="start" color="medium"></ion-icon>
+          <ion-input 
+            type="password" 
+            [(ngModel)]="password"
+            placeholder="Mot de passe">
+          </ion-input>
+        </ion-item>
+
+        <!-- Bouton de connexion -->
+        <ion-button 
+          expand="block" 
+          (click)="login()" 
+          class="btn-login"
+          [disabled]="!email || !password">
+          Se connecter
+        </ion-button>
+
+        <!-- Lien inscription -->
+        <ion-button 
+          expand="block" 
+          fill="clear" 
+          routerLink="/register"
+          class="btn-register">
+          Créer un compte
+        </ion-button>
+
+      </ion-card-content>
+    </ion-card>
+
+  </div>
+
+</ion-content>

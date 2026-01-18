@@ -1,0 +1,67 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Mon Traitement</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="logout()">
+        <ion-icon name="log-out-outline" style="color: white;"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  
+  <!-- Carte de bienvenue -->
+  <ion-card class="welcome-card">
+    <ion-card-content>
+      <h2>👋 Bonjour {{ userName }}</h2>
+      <p>Vous avez <strong>{{ medicationsCount }}</strong> médicaments à prendre.</p>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Liste des médicaments -->
+  <div *ngIf="medications.length > 0">
+    <h3 style="margin-left: 5px; color: #555;">Vos médicaments</h3>
+    
+    <ion-card *ngFor="let med of medications" class="medication-card">
+      <ion-card-header>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <ion-card-title>{{ med.name }}</ion-card-title>
+          <ion-icon name="medkit" color="primary"></ion-icon>
+        </div>
+        <ion-card-subtitle>{{ med.dosage }} • {{ med.frequency }}</ion-card-subtitle>
+      </ion-card-header>
+      
+      <ion-card-content>
+        <div style="margin-bottom: 10px;">
+          <ion-chip *ngFor="let hour of med.hours">
+            <ion-icon name="time"></ion-icon>
+            <ion-label>{{ hour }}</ion-label>
+          </ion-chip>
+        </div>
+        
+        <div style="text-align: right;">
+          <ion-button fill="clear" size="small" class="btn-delete" (click)="deleteMedication(med.id)">
+            <ion-icon slot="start" name="trash-outline"></ion-icon>
+            Supprimer
+          </ion-button>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <!-- État vide -->
+  <div *ngIf="medications.length === 0" style="text-align: center; margin-top: 50px; opacity: 0.6;">
+    <ion-icon name="medical" style="font-size: 80px; color: #ccc;"></ion-icon>
+    <h3>Aucun traitement</h3>
+    <p>Ajoutez votre premier médicament</p>
+  </div>
+
+  <!-- Bouton flottant (FAB) pour ajouter -->
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button (click)="addMedication()" class="fab-button">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+
+</ion-content>

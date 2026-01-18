@@ -1,0 +1,69 @@
+<ion-header>
+  <ion-toolbar color="success">
+    <ion-title>Espace Aidant</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="logout()">
+        <ion-icon name="log-out-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  
+  <!-- En-tête avec salutation -->
+  <div class="header-section">
+    <h1>👨‍⚕️ Bonjour {{ userName }}</h1>
+    <p>Voici la liste des patients inscrits</p>
+  </div>
+
+  <!-- Statistiques globales -->
+  <h2>Aperçu global</h2>
+  <ion-grid>
+    <ion-row>
+      <ion-col size="6">
+        <ion-card class="stat-card">
+          <ion-card-content>
+            <h2>{{ patients.length }}</h2>
+            <p>Patients</p>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+      <ion-col size="6">
+        <ion-card class="stat-card">
+          <ion-card-content>
+            <h2>Actif</h2>
+            <p>Statut</p>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+
+  <!-- Liste des patients -->
+  <h2>Liste des patients</h2>
+
+  <div *ngIf="patients.length === 0" class="empty-state">
+    <ion-icon name="people-outline" size="large"></ion-icon>
+    <p>Aucun patient inscrit pour le moment</p>
+  </div>
+
+  <ion-card *ngFor="let patient of patients" class="patient-card" (click)="viewPatientDetails(patient)">
+    <ion-card-content class="patient-card-content">
+      <div class="patient-info">
+        <div class="patient-avatar">
+          {{ patient?.name?.charAt(0)?.toUpperCase() || 'P' }}
+        </div>
+        <div class="patient-details">
+          <h3>{{ patient?.name || 'Sans nom' }}</h3>
+          <p>{{ patient?.email || 'Sans email' }}</p>
+          <p class="date">Inscrit le {{ patient?.createdAt }}</p>
+        </div>
+        <ion-icon name="chevron-forward-outline" class="arrow-icon"></ion-icon>
+      </div>
+    </ion-card-content>
+  </ion-card>
+    </ion-card-content>
+  </ion-card>
+
+</ion-content>

@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule, AlertController, ToastController } from '@ionic/angular';
@@ -14,9 +14,6 @@ import { AngularFireDatabase } from '@angular/fire/compat/database';
 })
 export class PatientDetailsPage implements OnInit {
   
-  // ✅ Injection correcte pour éviter l'erreur de dépendance circulaire
-  private db = inject(AngularFireDatabase);
-  
   patientUid: string = '';
   patientName: string = '';
   patientEmail: string = '';
@@ -26,7 +23,8 @@ export class PatientDetailsPage implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private alertCtrl: AlertController,
-    private toastCtrl: ToastController
+    private toastCtrl: ToastController,
+    private db: AngularFireDatabase  // ✅ Injection classique dans le constructor
   ) {}
 
   ngOnInit() {
@@ -39,16 +37,18 @@ export class PatientDetailsPage implements OnInit {
   }
 
   loadPatientInfo() {
-    this.db.object(`/users/${this.patientUid}`).valueChanges().subscribe((data: any) => {
+    this.db.object(`users/${this.patientUid}`).valueChanges().subscribe((data: any) => {
       if (data) {
-        this.patientName = data.name;
-        this.patientEmail = data.email;
+        this.patientName = data.name || 'Patient';
+        this.patientEmail = data.email || '';
       }
     });
   }
 
   loadMedicaments() {
-    this.db.list(`/medicaments/${this.patientUid}`).snapshotChanges().subscribe(actions => {
+    this.db.list(`medicaments`, ref => 
+      ref.orderByChild('patientId').equalTo(this.patientUid)
+    ).snapshotChanges().subscribe(actions => {
       this.medicaments = actions.map(action => ({
         key: action.payload.key,
         ...action.payload.val() as any
@@ -60,35 +60,21 @@ export class PatientDetailsPage implements OnInit {
     const alert = await this.alertCtrl.create({
       header: 'Ajouter un médicament',
       inputs: [
-        {
-          name: 'nom',
-          type: 'text',
-          placeholder: 'Nom du médicament'
-        },
-        {
-          name: 'dosage',
-          type: 'text',
-          placeholder: 'Dosage (ex: 500mg)'
-        },
-        {
-          name: 'frequence',
-          type: 'text',
-          placeholder: 'Fréquence (ex: 3x/jour)'
-        },
-        {
-          name: 'heures',
-          type: 'text',
-          placeholder: 'Heures (ex: 08:00, 14:00, 20:00)'
-        }
+        { name: 'name', type: 'text', placeholder: 'Nom du médicament' },
+        { name: 'dosage', type: 'text', placeholder: 'Dosage (ex: 500mg)' },
+        { name: 'frequency', type: 'text', placeholder: 'Fréquence (ex: 3x/jour)' },
+        { name: 'hours', type: 'text', placeholder: 'Heures (ex: 08:00, 14:00)' }
       ],
       buttons: [
         { text: 'Annuler', role: 'cancel' },
         {
           text: 'Ajouter',
           handler: (data) => {
-            if (data.nom && data.dosage && data.frequence) {
+            if (data.name && data.dosage && data.frequency) {
               this.saveMedicament(data);
+              return true;
             }
+            return false;
           }
         }
       ]
@@ -99,21 +85,23 @@ export class PatientDetailsPage implements OnInit {
 
   saveMedicament(data: any) {
     const medicamentData = {
-      nom: data.nom,
+      patientId: this.patientUid,
+      name: data.name,
       dosage: data.dosage,
-      frequence: data.frequence,
-      heures: data.heures || '',
-      dateAjout: new Date().toISOString(),
-      ajoutePar: 'aidant'
+      frequency: data.frequency,
+      hours: data.hours ? data.hours.split(',').map((h: string) => h.trim()) : [],
+      startDate: new Date().toISOString(),
+      createdAt: new Date().toISOString(),
+      addedBy: 'aidant'
     };
 
-    this.db.list(`/medicaments/${this.patientUid}`).push(medicamentData)
+    this.db.list('medicaments').push(medicamentData)
       .then(() => {
-        this.showToast('Médicament ajouté avec succès !');
+        this.showToast('Médicament ajouté avec succès !', 'success');
       })
       .catch(error => {
         console.error('Erreur:', error);
-        this.showToast('Erreur lors de l\'ajout');
+        this.showToast('Erreur lors de l\'ajout', 'danger');
       });
   }
 
@@ -125,10 +113,14 @@ export class PatientDetailsPage implements OnInit {
         { text: 'Annuler', role: 'cancel' },
         {
           text: 'Supprimer',
+          role: 'destructive',
           handler: () => {
-            this.db.list(`/medicaments/${this.patientUid}`).remove(key)
+            this.db.object(`medicaments/${key}`).remove()
               .then(() => {
-                this.showToast('Médicament supprimé');
+                this.showToast('Médicament supprimé', 'success');
+              })
+              .catch(error => {
+                this.showToast('Erreur lors de la suppression', 'danger');
               });
           }
         }
@@ -138,12 +130,12 @@ export class PatientDetailsPage implements OnInit {
     await alert.present();
   }
 
-  async showToast(message: string) {
+  async showToast(message: string, color: string = 'success') {
     const toast = await this.toastCtrl.create({
       message: message,
       duration: 2000,
       position: 'bottom',
-      color: 'success'
+      color: color
     });
     await toast.present();
   }

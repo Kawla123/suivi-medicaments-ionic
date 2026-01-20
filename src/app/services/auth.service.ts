@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { 
   Auth, 
   createUserWithEmailAndPassword, 
@@ -16,15 +16,17 @@ import { BehaviorSubject, Observable } from 'rxjs';
 })
 export class AuthService {
   
+  // ✅ INJECTION avec inject() au lieu du constructor
+  private auth = inject(Auth);
+  private database = inject(Database);
+  private router = inject(Router);
+  
   // Observable pour suivre l'état de connexion de l'utilisateur
   private currentUserSubject = new BehaviorSubject<FirebaseUser | null>(null);
   public currentUser$: Observable<FirebaseUser | null> = this.currentUserSubject.asObservable();
 
-  constructor(
-    private auth: Auth,
-    private database: Database,
-    private router: Router
-  ) {
+  constructor() {
+    // ✅ Le constructor ne prend plus de paramètres
     // Écouter les changements d'état d'authentification Firebase
     onAuthStateChanged(this.auth, (user) => {
       this.currentUserSubject.next(user);

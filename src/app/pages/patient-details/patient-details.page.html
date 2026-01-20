@@ -16,10 +16,10 @@
     <ion-card-content>
       <div class="patient-header">
         <div class="avatar">
-          {{ patientName?.charAt(0)?.toUpperCase() }}
+          {{ patientName?.charAt(0)?.toUpperCase() || 'P' }}
         </div>
         <div>
-          <h2>{{ patientName }}</h2>
+          <h2>{{ patientName || 'Chargement...' }}</h2>
           <p>{{ patientEmail }}</p>
         </div>
       </div>
@@ -41,10 +41,12 @@
     <ion-card-content>
       <div class="med-header">
         <div>
-          <h3>💊 {{ med.nom }}</h3>
+          <h3>💊 {{ med.name }}</h3>
           <p class="dosage">{{ med.dosage }}</p>
-          <p class="frequence">🕐 {{ med.frequence }}</p>
-          <p class="heures" *ngIf="med.heures">⏰ {{ med.heures }}</p>
+          <p class="frequence">🕐 {{ med.frequency }}</p>
+          <p class="heures" *ngIf="med.hours && med.hours.length > 0">
+            ⏰ {{ med.hours.join(', ') }}
+          </p>
         </div>
         <ion-button 
           fill="clear" 

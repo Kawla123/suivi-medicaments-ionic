@@ -11,13 +11,13 @@
 
 <ion-content class="ion-padding">
   
-  <!-- En-tête avec salutation -->
+  <!-- En-tête -->
   <div class="header-section">
     <h1>👨‍⚕️ Bonjour {{ userName }}</h1>
     <p>Voici la liste des patients inscrits</p>
   </div>
 
-  <!-- Statistiques globales -->
+  <!-- Statistiques -->
   <h2>Aperçu global</h2>
   <ion-grid>
     <ion-row>
@@ -48,21 +48,30 @@
     <p>Aucun patient inscrit pour le moment</p>
   </div>
 
-  <ion-card *ngFor="let patient of patients" class="patient-card" (click)="viewPatientDetails(patient)">
-    <ion-card-content class="patient-card-content">
+  <ion-card *ngFor="let patient of patients" class="patient-card" button="true" (click)="viewPatientDetails(patient)">
+    <ion-card-content>
       <div class="patient-info">
+        
         <div class="patient-avatar">
           {{ patient?.name?.charAt(0)?.toUpperCase() || 'P' }}
         </div>
+        
         <div class="patient-details">
           <h3>{{ patient?.name || 'Sans nom' }}</h3>
           <p>{{ patient?.email || 'Sans email' }}</p>
-          <p class="date">Inscrit le {{ patient?.createdAt }}</p>
+          <p class="date">Inscrit le {{ patient?.createdAt | date:'dd/MM/yyyy' }}</p>
         </div>
-        <ion-icon name="chevron-forward-outline" class="arrow-icon"></ion-icon>
+
+        <!-- Bouton DÉTAILS -->
+        <ion-button 
+          shape="round" 
+          fill="outline" 
+          size="small" 
+          color="tertiary">
+          Détails
+        </ion-button>
+        
       </div>
-    </ion-card-content>
-  </ion-card>
     </ion-card-content>
   </ion-card>
 

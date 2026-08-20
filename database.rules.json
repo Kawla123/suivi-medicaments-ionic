@@ -1,0 +1,32 @@
+{
+  "rules": {
+    "users": {
+      ".read": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'aidant'",
+      "$uid": {
+        ".read": "auth != null && (auth.uid === $uid || root.child('users').child(auth.uid).child('role').val() === 'aidant')",
+        ".write": "auth != null && auth.uid === $uid",
+        ".validate": "newData.hasChildren(['uid', 'email', 'name', 'role', 'createdAt']) && newData.child('uid').val() === $uid && (newData.child('role').val() === 'patient' || newData.child('role').val() === 'aidant') && (!data.exists() || newData.child('role').val() === data.child('role').val())"
+      }
+    },
+
+    "medicaments": {
+      ".read": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'aidant' || (query.orderByChild === 'patientId' && query.equalTo === auth.uid))",
+      ".indexOn": "patientId",
+      "$medId": {
+        ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'aidant' || (newData.exists() ? newData.child('patientId').val() === auth.uid : data.child('patientId').val() === auth.uid))",
+        ".validate": "newData.hasChildren(['patientId', 'name', 'dosage', 'frequency', 'hours', 'startDate', 'createdAt'])"
+      }
+    },
+
+    "takes": {
+      "$patientId": {
+        ".read": "auth != null && (auth.uid === $patientId || root.child('users').child(auth.uid).child('role').val() === 'aidant')",
+        ".write": "auth != null && auth.uid === $patientId",
+        ".indexOn": "scheduledDate",
+        "$takeId": {
+          ".validate": "newData.hasChildren(['medicationId', 'medicationName', 'patientId', 'scheduledTime', 'scheduledDate', 'status', 'createdAt']) && newData.child('patientId').val() === $patientId"
+        }
+      }
+    }
+  }
+}

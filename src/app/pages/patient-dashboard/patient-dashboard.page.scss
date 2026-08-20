@@ -81,3 +81,24 @@ ion-chip {
   color: #eb445a;
   font-weight: 600;
 }
+
+// Bascule Aujourd'hui / Historique
+.view-segment {
+  margin-bottom: 15px;
+}
+
+// Historique des prises
+.history-day {
+  margin-bottom: 20px;
+
+  .history-date {
+    text-transform: capitalize;
+    color: #555;
+    margin-left: 5px;
+  }
+
+  ion-list {
+    border-radius: 15px;
+    overflow: hidden;
+  }
+}

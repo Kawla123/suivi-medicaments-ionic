@@ -19,50 +19,91 @@
     </ion-card-content>
   </ion-card>
 
-  <!-- Liste des médicaments -->
-  <div *ngIf="medications.length > 0">
-    <h3 style="margin-left: 5px; color: #555;">Vos médicaments</h3>
-    
-    <ion-card *ngFor="let med of medications" class="medication-card">
-      <ion-card-header>
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <ion-card-title>{{ med.name }}</ion-card-title>
-          <ion-icon name="medkit" color="primary"></ion-icon>
-        </div>
-        <ion-card-subtitle>{{ med.dosage }} • {{ med.frequency }}</ion-card-subtitle>
-      </ion-card-header>
-      
-      <ion-card-content>
-        <div class="hours-list">
-          <ion-chip
-            *ngFor="let hour of med.hours"
-            [class.chip-taken]="getTakeStatus(med.id, hour) === 'taken'"
-            [class.chip-missed]="getTakeStatus(med.id, hour) === 'missed'"
-            (click)="getTakeStatus(med.id, hour) !== 'taken' && markAsTaken(med, hour)">
-            <ion-icon [name]="getTakeStatus(med.id, hour) === 'taken' ? 'checkmark-circle' : 'time'"></ion-icon>
-            <ion-label>{{ hour }}</ion-label>
-          </ion-chip>
-        </div>
+  <!-- Bascule Aujourd'hui / Historique -->
+  <ion-segment [value]="viewMode" (ionChange)="setViewMode($any($event.detail.value))" class="view-segment">
+    <ion-segment-button value="today">
+      <ion-label>Aujourd'hui</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="history">
+      <ion-label>Historique</ion-label>
+    </ion-segment-button>
+  </ion-segment>
 
-        <div style="text-align: right;">
-          <ion-button fill="clear" size="small" class="btn-delete" (click)="deleteMedication(med.id)">
-            <ion-icon slot="start" name="trash-outline"></ion-icon>
-            Supprimer
-          </ion-button>
-        </div>
-      </ion-card-content>
-    </ion-card>
-  </div>
+  <ng-container *ngIf="viewMode === 'today'">
+    <!-- Liste des médicaments -->
+    <div *ngIf="medications.length > 0">
+      <h3 style="margin-left: 5px; color: #555;">Vos médicaments</h3>
 
-  <!-- État vide -->
-  <div *ngIf="medications.length === 0" style="text-align: center; margin-top: 50px; opacity: 0.6;">
-    <ion-icon name="medical" style="font-size: 80px; color: #ccc;"></ion-icon>
-    <h3>Aucun traitement</h3>
-    <p>Ajoutez votre premier médicament</p>
-  </div>
+      <ion-card *ngFor="let med of medications" class="medication-card">
+        <ion-card-header>
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <ion-card-title>{{ med.name }}</ion-card-title>
+            <ion-icon name="medkit" color="primary"></ion-icon>
+          </div>
+          <ion-card-subtitle>{{ med.dosage }} • {{ med.frequency }}</ion-card-subtitle>
+        </ion-card-header>
+
+        <ion-card-content>
+          <div class="hours-list">
+            <ion-chip
+              *ngFor="let hour of med.hours"
+              [class.chip-taken]="getTakeStatus(med.id, hour) === 'taken'"
+              [class.chip-missed]="getTakeStatus(med.id, hour) === 'missed'"
+              (click)="getTakeStatus(med.id, hour) !== 'taken' && markAsTaken(med, hour)">
+              <ion-icon [name]="getTakeStatus(med.id, hour) === 'taken' ? 'checkmark-circle' : 'time'"></ion-icon>
+              <ion-label>{{ hour }}</ion-label>
+            </ion-chip>
+          </div>
+
+          <div style="text-align: right;">
+            <ion-button fill="clear" size="small" (click)="editMedication(med)">
+              <ion-icon slot="start" name="create-outline"></ion-icon>
+              Modifier
+            </ion-button>
+            <ion-button fill="clear" size="small" class="btn-delete" (click)="deleteMedication(med.id)">
+              <ion-icon slot="start" name="trash-outline"></ion-icon>
+              Supprimer
+            </ion-button>
+          </div>
+        </ion-card-content>
+      </ion-card>
+    </div>
+
+    <!-- État vide -->
+    <div *ngIf="medications.length === 0" style="text-align: center; margin-top: 50px; opacity: 0.6;">
+      <ion-icon name="medical" style="font-size: 80px; color: #ccc;"></ion-icon>
+      <h3>Aucun traitement</h3>
+      <p>Ajoutez votre premier médicament</p>
+    </div>
+  </ng-container>
+
+  <ng-container *ngIf="viewMode === 'history'">
+    <div *ngIf="historyByDate.length === 0" style="text-align: center; margin-top: 50px; opacity: 0.6;">
+      <ion-icon name="time-outline" style="font-size: 80px; color: #ccc;"></ion-icon>
+      <h3>Aucun historique</h3>
+      <p>Vos prises passées apparaîtront ici</p>
+    </div>
+
+    <div *ngFor="let day of historyByDate" class="history-day">
+      <h3 class="history-date">{{ day.date | date:'EEEE d MMMM':'':'fr-FR' }}</h3>
+      <ion-list>
+        <ion-item *ngFor="let take of day.takes" lines="full">
+          <ion-icon
+            slot="start"
+            [name]="take.status === 'taken' ? 'checkmark-circle' : 'close-circle'"
+            [color]="take.status === 'taken' ? 'success' : 'danger'">
+          </ion-icon>
+          <ion-label>
+            <h2>{{ take.medicationName }}</h2>
+            <p>Prévu à {{ take.scheduledTime }}{{ take.takenAt ? (' • pris à ' + (take.takenAt | date:'HH:mm')) : '' }}</p>
+          </ion-label>
+        </ion-item>
+      </ion-list>
+    </div>
+  </ng-container>
 
   <!-- Bouton flottant (FAB) pour ajouter -->
-  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed" *ngIf="viewMode === 'today'">
     <ion-fab-button (click)="addMedication()" class="fab-button">
       <ion-icon name="add"></ion-icon>
     </ion-fab-button>

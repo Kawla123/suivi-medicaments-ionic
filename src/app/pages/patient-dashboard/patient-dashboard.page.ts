@@ -8,6 +8,7 @@ import { AuthService } from '../../services/auth.service';
 import { MedicationService } from '../../services/medication.service';
 import { MedicationTakeService } from '../../services/medication-take.service';
 import { Medication } from '../../models/user.model';
+import { MedicationTake } from '../../models/medication-take.model';
 
 @Component({
   selector: 'app-patient-dashboard',
@@ -32,9 +33,12 @@ export class PatientDashboardPage implements OnInit, OnDestroy {
   medicationsCount: number = 0;
   patientId: string = '';
   takesStatus: Map<string, any> = new Map();
-  
+  viewMode: 'today' | 'history' = 'today';
+  historyByDate: { date: string; takes: MedicationTake[] }[] = [];
+
   private medicationsSub?: Subscription;
   private takesSub?: Subscription;
+  private historySub?: Subscription;
 
   // ✅ Constructor vide
   constructor() {}
@@ -43,11 +47,13 @@ export class PatientDashboardPage implements OnInit, OnDestroy {
     await this.loadUserData();
     this.loadMedications();
     this.loadTodayTakes();
+    this.loadHistory();
   }
 
   ngOnDestroy() {
     if (this.medicationsSub) this.medicationsSub.unsubscribe();
     if (this.takesSub) this.takesSub.unsubscribe();
+    if (this.historySub) this.historySub.unsubscribe();
   }
 
   async loadUserData() {
@@ -88,6 +94,31 @@ export class PatientDashboardPage implements OnInit, OnDestroy {
         });
       }
     );
+  }
+
+  loadHistory() {
+    if (!this.patientId) return;
+
+    const today = new Date().toISOString().split('T')[0];
+
+    this.historySub = this.takeService.getPatientTakes(this.patientId).subscribe(takes => {
+      const past = takes
+        .filter(take => take.scheduledDate < today)
+        .sort((a, b) => b.scheduledDate.localeCompare(a.scheduledDate) || b.scheduledTime.localeCompare(a.scheduledTime));
+
+      const byDate = new Map<string, MedicationTake[]>();
+      past.forEach(take => {
+        const list = byDate.get(take.scheduledDate) || [];
+        list.push(take);
+        byDate.set(take.scheduledDate, list);
+      });
+
+      this.historyByDate = Array.from(byDate.entries()).map(([date, dateTakes]) => ({ date, takes: dateTakes }));
+    });
+  }
+
+  setViewMode(mode: 'today' | 'history') {
+    this.viewMode = mode;
   }
 
   getTakeStatus(medicationId: string | undefined, hour: string): string {
@@ -154,6 +185,45 @@ export class PatientDashboardPage implements OnInit, OnDestroy {
                 return true;
               } catch (e) {
                 this.showToast('Échec de l\'ajout', 'danger');
+                return false;
+              }
+            } else {
+              this.showToast('Nom et dosage requis', 'warning');
+              return false;
+            }
+          }
+        }
+      ]
+    });
+    await alert.present();
+  }
+
+  async editMedication(medication: Medication) {
+    const alert = await this.alertCtrl.create({
+      header: 'Modifier le médicament',
+      inputs: [
+        { name: 'name', type: 'text', placeholder: 'Nom', value: medication.name },
+        { name: 'dosage', type: 'text', placeholder: 'Dosage', value: medication.dosage },
+        { name: 'frequency', type: 'text', placeholder: 'Fréquence', value: medication.frequency },
+        { name: 'hours', type: 'text', placeholder: 'Heures (ex: 08:00, 20:00)', value: medication.hours.join(', ') }
+      ],
+      buttons: [
+        { text: 'Annuler', role: 'cancel' },
+        {
+          text: 'Enregistrer',
+          handler: async (data) => {
+            if (data.name && data.dosage) {
+              try {
+                await this.medicationService.updateMedication(medication.id || '', {
+                  name: data.name,
+                  dosage: data.dosage,
+                  frequency: data.frequency || '',
+                  hours: data.hours ? data.hours.split(',').map((h: string) => h.trim()) : []
+                });
+                this.showToast('Médicament modifié', 'success');
+                return true;
+              } catch (e) {
+                this.showToast('Échec de la modification', 'danger');
                 return false;
               }
             } else {

@@ -95,4 +95,28 @@
       margin-top: 6px;
     }
   }
+
+  .med-actions {
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+.view-segment {
+  margin-bottom: 15px;
+}
+
+.history-day {
+  margin-bottom: 20px;
+
+  .history-date {
+    text-transform: capitalize;
+    color: #555;
+    margin-left: 5px;
+  }
+
+  ion-list {
+    border-radius: 15px;
+    overflow: hidden;
+  }
 }

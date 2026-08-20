@@ -1,9 +1,11 @@
-import { Component, OnInit, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { Component, OnInit, OnDestroy, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule, AlertController } from '@ionic/angular';
 import { Router, RouterModule } from '@angular/router';
+import { Subscription } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
+import { MedicationService } from '../../services/medication.service';
 
 @Component({
   selector: 'app-aidant-dashboard',
@@ -13,13 +15,17 @@ import { AuthService } from '../../services/auth.service';
   imports: [IonicModule, CommonModule, FormsModule, RouterModule],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
-export class AidantDashboardPage implements OnInit {
-  
+export class AidantDashboardPage implements OnInit, OnDestroy {
+
   userName: string = '';
-  patients: any[] = []; 
-  
+  patients: any[] = [];
+  medicationsCount: number = 0;
+
+  private medicationsSub?: Subscription;
+
   constructor(
     private authService: AuthService,
+    private medicationService: MedicationService,
     private router: Router,
     private alertCtrl: AlertController
   ) {}
@@ -27,6 +33,17 @@ export class AidantDashboardPage implements OnInit {
   async ngOnInit() {
     await this.loadUserData();
     this.loadPatients();
+    this.loadMedicationsCount();
+  }
+
+  ngOnDestroy() {
+    if (this.medicationsSub) this.medicationsSub.unsubscribe();
+  }
+
+  loadMedicationsCount() {
+    this.medicationsSub = this.medicationService.getAllMedications().subscribe(
+      (medications) => this.medicationsCount = medications.length
+    );
   }
 
   async loadUserData() {

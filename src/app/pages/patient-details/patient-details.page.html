@@ -26,45 +26,86 @@
     </ion-card-content>
   </ion-card>
 
-  <!-- Liste des médicaments -->
-  <div class="section-header">
-    <h2>Médicaments</h2>
-    <ion-badge color="primary">{{ medicaments.length }}</ion-badge>
-  </div>
+  <!-- Bascule Aujourd'hui / Historique -->
+  <ion-segment [value]="viewMode" (ionChange)="setViewMode($any($event.detail.value))" class="view-segment">
+    <ion-segment-button value="today">
+      <ion-label>Médicaments</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="history">
+      <ion-label>Historique</ion-label>
+    </ion-segment-button>
+  </ion-segment>
 
-  <div *ngIf="medicaments.length === 0" class="empty-state">
-    <ion-icon name="medkit-outline" size="large"></ion-icon>
-    <p>Aucun médicament pour ce patient</p>
-  </div>
+  <ng-container *ngIf="viewMode === 'today'">
+    <!-- Liste des médicaments -->
+    <div class="section-header">
+      <h2>Médicaments</h2>
+      <ion-badge color="primary">{{ medicaments.length }}</ion-badge>
+    </div>
 
-  <ion-card *ngFor="let med of medicaments" class="med-card">
-    <ion-card-content>
-      <div class="med-header">
-        <div>
-          <h3>💊 {{ med.name }}</h3>
-          <p class="dosage">{{ med.dosage }}</p>
-          <p class="frequence">🕐 {{ med.frequency }}</p>
-          <div class="hours-list" *ngIf="med.hours && med.hours.length > 0">
-            <ion-chip
-              *ngFor="let hour of med.hours"
-              [color]="getTakeStatus(med.key, hour) === 'taken' ? 'success' : 'medium'">
-              <ion-icon [name]="getTakeStatus(med.key, hour) === 'taken' ? 'checkmark-circle' : 'time'"></ion-icon>
-              <ion-label>{{ hour }}</ion-label>
-            </ion-chip>
+    <div *ngIf="medicaments.length === 0" class="empty-state">
+      <ion-icon name="medkit-outline" size="large"></ion-icon>
+      <p>Aucun médicament pour ce patient</p>
+    </div>
+
+    <ion-card *ngFor="let med of medicaments" class="med-card">
+      <ion-card-content>
+        <div class="med-header">
+          <div>
+            <h3>💊 {{ med.name }}</h3>
+            <p class="dosage">{{ med.dosage }}</p>
+            <p class="frequence">🕐 {{ med.frequency }}</p>
+            <div class="hours-list" *ngIf="med.hours && med.hours.length > 0">
+              <ion-chip
+                *ngFor="let hour of med.hours"
+                [color]="getTakeStatus(med.key, hour) === 'taken' ? 'success' : 'medium'">
+                <ion-icon [name]="getTakeStatus(med.key, hour) === 'taken' ? 'checkmark-circle' : 'time'"></ion-icon>
+                <ion-label>{{ hour }}</ion-label>
+              </ion-chip>
+            </div>
+          </div>
+          <div class="med-actions">
+            <ion-button fill="clear" (click)="modifierMedicament(med)">
+              <ion-icon slot="icon-only" name="create-outline"></ion-icon>
+            </ion-button>
+            <ion-button
+              fill="clear"
+              color="danger"
+              (click)="supprimerMedicament(med.key)">
+              <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+            </ion-button>
           </div>
         </div>
-        <ion-button
-          fill="clear"
-          color="danger"
-          (click)="supprimerMedicament(med.key)">
-          <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
-        </ion-button>
-      </div>
-    </ion-card-content>
-  </ion-card>
+      </ion-card-content>
+    </ion-card>
+  </ng-container>
+
+  <ng-container *ngIf="viewMode === 'history'">
+    <div *ngIf="historyByDate.length === 0" class="empty-state">
+      <ion-icon name="time-outline" size="large"></ion-icon>
+      <p>Aucun historique pour ce patient</p>
+    </div>
+
+    <div *ngFor="let day of historyByDate" class="history-day">
+      <h3 class="history-date">{{ day.date | date:'EEEE d MMMM':'':'fr-FR' }}</h3>
+      <ion-list>
+        <ion-item *ngFor="let take of day.takes" lines="full">
+          <ion-icon
+            slot="start"
+            [name]="take.status === 'taken' ? 'checkmark-circle' : 'close-circle'"
+            [color]="take.status === 'taken' ? 'success' : 'danger'">
+          </ion-icon>
+          <ion-label>
+            <h2>{{ take.medicationName }}</h2>
+            <p>Prévu à {{ take.scheduledTime }}{{ take.takenAt ? (' • pris à ' + (take.takenAt | date:'HH:mm')) : '' }}</p>
+          </ion-label>
+        </ion-item>
+      </ion-list>
+    </div>
+  </ng-container>
 
   <!-- Bouton flottant pour ajouter -->
-  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed" *ngIf="viewMode === 'today'">
     <ion-fab-button color="success" (click)="ajouterMedicament()">
       <ion-icon name="add"></ion-icon>
     </ion-fab-button>

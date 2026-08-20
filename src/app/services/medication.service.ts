@@ -46,6 +46,18 @@ export class MedicationService {
     return this.db.object(`users/${uid}`).valueChanges();
   }
 
+  getAllMedications(): Observable<Medication[]> {
+    return new Observable(observer => {
+      this.db.list('medicaments').snapshotChanges().subscribe(actions => {
+        const medications = actions.map(action => ({
+          id: action.payload.key || undefined,
+          ...action.payload.val() as Medication
+        })) as Medication[];
+        observer.next(medications);
+      });
+    });
+  }
+
   async updateMedication(medicationId: string, medication: Partial<Medication>): Promise<void> {
     try {
       await this.db.object(`medicaments/${medicationId}`).update(medication);

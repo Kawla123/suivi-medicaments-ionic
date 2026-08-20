@@ -6,6 +6,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { AngularFireDatabase } from '@angular/fire/compat/database';
 import { Subscription } from 'rxjs';
 import { MedicationTakeService } from '../../services/medication-take.service';
+import { MedicationTake } from '../../models/medication-take.model';
 
 @Component({
   selector: 'app-patient-details',
@@ -21,8 +22,11 @@ export class PatientDetailsPage implements OnInit, OnDestroy {
   patientEmail: string = '';
   medicaments: any[] = [];
   takesStatus: Map<string, string> = new Map();
+  viewMode: 'today' | 'history' = 'today';
+  historyByDate: { date: string; takes: MedicationTake[] }[] = [];
 
   private takesSub?: Subscription;
+  private historySub?: Subscription;
 
   constructor(
     private route: ActivatedRoute,
@@ -40,11 +44,36 @@ export class PatientDetailsPage implements OnInit, OnDestroy {
       this.loadPatientInfo();
       this.loadMedicaments();
       this.loadTodayTakes();
+      this.loadHistory();
     }
   }
 
   ngOnDestroy() {
     if (this.takesSub) this.takesSub.unsubscribe();
+    if (this.historySub) this.historySub.unsubscribe();
+  }
+
+  setViewMode(mode: 'today' | 'history') {
+    this.viewMode = mode;
+  }
+
+  loadHistory() {
+    const today = new Date().toISOString().split('T')[0];
+
+    this.historySub = this.takeService.getPatientTakes(this.patientUid).subscribe(takes => {
+      const past = takes
+        .filter(take => take.scheduledDate < today)
+        .sort((a, b) => b.scheduledDate.localeCompare(a.scheduledDate) || b.scheduledTime.localeCompare(a.scheduledTime));
+
+      const byDate = new Map<string, MedicationTake[]>();
+      past.forEach(take => {
+        const list = byDate.get(take.scheduledDate) || [];
+        list.push(take);
+        byDate.set(take.scheduledDate, list);
+      });
+
+      this.historyByDate = Array.from(byDate.entries()).map(([date, dateTakes]) => ({ date, takes: dateTakes }));
+    });
   }
 
   loadTodayTakes() {
@@ -130,6 +159,40 @@ export class PatientDetailsPage implements OnInit, OnDestroy {
         console.error('Erreur:', error);
         this.showToast('Erreur lors de l\'ajout', 'danger');
       });
+  }
+
+  async modifierMedicament(med: any) {
+    const alert = await this.alertCtrl.create({
+      header: 'Modifier le médicament',
+      inputs: [
+        { name: 'name', type: 'text', placeholder: 'Nom du médicament', value: med.name },
+        { name: 'dosage', type: 'text', placeholder: 'Dosage', value: med.dosage },
+        { name: 'frequency', type: 'text', placeholder: 'Fréquence', value: med.frequency },
+        { name: 'hours', type: 'text', placeholder: 'Heures (ex: 08:00, 14:00)', value: (med.hours || []).join(', ') }
+      ],
+      buttons: [
+        { text: 'Annuler', role: 'cancel' },
+        {
+          text: 'Enregistrer',
+          handler: (data) => {
+            if (data.name && data.dosage && data.frequency) {
+              this.db.object(`medicaments/${med.key}`).update({
+                name: data.name,
+                dosage: data.dosage,
+                frequency: data.frequency,
+                hours: data.hours ? data.hours.split(',').map((h: string) => h.trim()) : []
+              })
+                .then(() => this.showToast('Médicament modifié', 'success'))
+                .catch(() => this.showToast('Erreur lors de la modification', 'danger'));
+              return true;
+            }
+            return false;
+          }
+        }
+      ]
+    });
+
+    await alert.present();
   }
 
   async supprimerMedicament(key: string) {

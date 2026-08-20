@@ -1,9 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule, AlertController, ToastController } from '@ionic/angular';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AngularFireDatabase } from '@angular/fire/compat/database';
+import { Subscription } from 'rxjs';
+import { MedicationTakeService } from '../../services/medication-take.service';
 
 @Component({
   selector: 'app-patient-details',
@@ -12,28 +14,53 @@ import { AngularFireDatabase } from '@angular/fire/compat/database';
   standalone: true,
   imports: [IonicModule, CommonModule, FormsModule]
 })
-export class PatientDetailsPage implements OnInit {
-  
+export class PatientDetailsPage implements OnInit, OnDestroy {
+
   patientUid: string = '';
   patientName: string = '';
   patientEmail: string = '';
   medicaments: any[] = [];
+  takesStatus: Map<string, string> = new Map();
+
+  private takesSub?: Subscription;
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private alertCtrl: AlertController,
     private toastCtrl: ToastController,
-    private db: AngularFireDatabase  // ✅ Injection classique dans le constructor
+    private db: AngularFireDatabase,  // ✅ Injection classique dans le constructor
+    private takeService: MedicationTakeService
   ) {}
 
   ngOnInit() {
     this.patientUid = this.route.snapshot.paramMap.get('uid') || '';
-    
+
     if (this.patientUid) {
       this.loadPatientInfo();
       this.loadMedicaments();
+      this.loadTodayTakes();
     }
+  }
+
+  ngOnDestroy() {
+    if (this.takesSub) this.takesSub.unsubscribe();
+  }
+
+  loadTodayTakes() {
+    this.takesSub = this.takeService.getTodayTakes(this.patientUid).subscribe(takes => {
+      this.takesStatus.clear();
+      takes.forEach(take => {
+        const key = `${take.medicationId}_${take.scheduledTime}`;
+        this.takesStatus.set(key, take.status);
+      });
+    });
+  }
+
+  getTakeStatus(medicationId: string | undefined, hour: string): string {
+    if (!medicationId) return 'pending';
+    const key = `${medicationId}_${hour}`;
+    return this.takesStatus.get(key) || 'pending';
   }
 
   loadPatientInfo() {

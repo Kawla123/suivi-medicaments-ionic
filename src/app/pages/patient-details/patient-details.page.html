@@ -44,13 +44,18 @@
           <h3>💊 {{ med.name }}</h3>
           <p class="dosage">{{ med.dosage }}</p>
           <p class="frequence">🕐 {{ med.frequency }}</p>
-          <p class="heures" *ngIf="med.hours && med.hours.length > 0">
-            ⏰ {{ med.hours.join(', ') }}
-          </p>
+          <div class="hours-list" *ngIf="med.hours && med.hours.length > 0">
+            <ion-chip
+              *ngFor="let hour of med.hours"
+              [color]="getTakeStatus(med.key, hour) === 'taken' ? 'success' : 'medium'">
+              <ion-icon [name]="getTakeStatus(med.key, hour) === 'taken' ? 'checkmark-circle' : 'time'"></ion-icon>
+              <ion-label>{{ hour }}</ion-label>
+            </ion-chip>
+          </div>
         </div>
-        <ion-button 
-          fill="clear" 
-          color="danger" 
+        <ion-button
+          fill="clear"
+          color="danger"
           (click)="supprimerMedicament(med.key)">
           <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
         </ion-button>

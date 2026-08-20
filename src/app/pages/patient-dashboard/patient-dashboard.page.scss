@@ -52,10 +52,28 @@ ion-toolbar {
 }
 
 // Badge des heures
+.hours-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
 ion-chip {
   background: rgba(102, 126, 234, 0.1);
   color: #667eea;
   font-weight: 600;
+  cursor: pointer;
+
+  &.chip-taken {
+    background: rgba(45, 211, 111, 0.15);
+    color: #2dd36f;
+  }
+
+  &.chip-missed {
+    background: rgba(235, 68, 90, 0.15);
+    color: #eb445a;
+  }
 }
 
 // Bouton supprimer

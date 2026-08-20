@@ -1,15 +1,12 @@
-import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
+import { ApplicationConfig, provideZoneChangeDetection, importProvidersFrom } from '@angular/core';
 import { provideRouter } from '@angular/router';
-import { provideIonicAngular } from '@ionic/angular/standalone';
 import { routes } from './app.routes';
+import { provideIonicAngular } from '@ionic/angular/standalone';
 
-// Firebase imports
-import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
-import { getAuth, provideAuth } from '@angular/fire/auth';
-import { getDatabase, provideDatabase } from '@angular/fire/database';
-import { getFirestore, provideFirestore } from '@angular/fire/firestore';
-
-// Environment
+// ✅ IMPORTS FIREBASE
+import { AngularFireModule } from '@angular/fire/compat';
+import { AngularFireDatabaseModule } from '@angular/fire/compat/database';
+import { AngularFireAuthModule } from '@angular/fire/compat/auth';
 import { environment } from '../environments/environment';
 
 export const appConfig: ApplicationConfig = {
@@ -17,9 +14,12 @@ export const appConfig: ApplicationConfig = {
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
     provideIonicAngular(),
-    provideFirebaseApp(() => initializeApp(environment.firebaseConfig)),
-    provideAuth(() => getAuth()),
-    provideDatabase(() => getDatabase()),
-    provideFirestore(() => getFirestore()),
+    
+    // ✅ AJOUTER LES PROVIDERS FIREBASE
+    importProvidersFrom(
+      AngularFireModule.initializeApp(environment.firebaseConfig),
+      AngularFireDatabaseModule,
+      AngularFireAuthModule
+    )
   ],
 };

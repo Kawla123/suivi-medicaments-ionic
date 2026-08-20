@@ -33,13 +33,17 @@
       </ion-card-header>
       
       <ion-card-content>
-        <div style="margin-bottom: 10px;">
-          <ion-chip *ngFor="let hour of med.hours">
-            <ion-icon name="time"></ion-icon>
+        <div class="hours-list">
+          <ion-chip
+            *ngFor="let hour of med.hours"
+            [class.chip-taken]="getTakeStatus(med.id, hour) === 'taken'"
+            [class.chip-missed]="getTakeStatus(med.id, hour) === 'missed'"
+            (click)="getTakeStatus(med.id, hour) !== 'taken' && markAsTaken(med, hour)">
+            <ion-icon [name]="getTakeStatus(med.id, hour) === 'taken' ? 'checkmark-circle' : 'time'"></ion-icon>
             <ion-label>{{ hour }}</ion-label>
           </ion-chip>
         </div>
-        
+
         <div style="text-align: right;">
           <ion-button fill="clear" size="small" class="btn-delete" (click)="deleteMedication(med.id)">
             <ion-icon slot="start" name="trash-outline"></ion-icon>

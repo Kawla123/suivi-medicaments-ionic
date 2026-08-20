@@ -1,8 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule, AlertController } from '@ionic/angular';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 
 @Component({
@@ -10,7 +10,8 @@ import { AuthService } from '../../services/auth.service';
   templateUrl: './aidant-dashboard.page.html',
   styleUrls: ['./aidant-dashboard.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule]
+  imports: [IonicModule, CommonModule, FormsModule, RouterModule],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class AidantDashboardPage implements OnInit {
   
@@ -31,9 +32,11 @@ export class AidantDashboardPage implements OnInit {
   async loadUserData() {
     const user = this.authService.getCurrentUser();
     if (user) {
-      const userData = await this.authService.getUserData(user.uid);
+      // ✅ Ajout de "as any" pour éviter l'erreur TypeScript
+      const userData = await this.authService.getUserData(user.uid) as any;
+      
       if (userData) {
-        this.userName = userData['name'] || 'Aidant';
+        this.userName = userData.name || 'Aidant';
       }
     } else {
       this.router.navigate(['/login']);
@@ -53,8 +56,12 @@ export class AidantDashboardPage implements OnInit {
   }
 
   viewPatientDetails(patient: any) {
-    console.log('Navigation vers patient:', patient);
-    this.router.navigate(['/patient-details', patient.uid]);
+    if (patient && patient.uid) {
+      console.log('Navigation vers patient:', patient);
+      this.router.navigate(['/patient-details', patient.uid]);
+    } else {
+      console.error('Patient sans UID:', patient);
+    }
   }
 
   async logout() {

@@ -23,14 +23,3 @@ export interface Medication {
   imageUrl?: string;              // Photo du médicament
   createdAt: string;              // Date d'ajout
 }
-
-// Interface pour une prise de médicament
-export interface MedicationTake {
-  id?: string;                    // ID auto-généré
-  medicationId: string;           // Référence au médicament
-  patientId: string;              // ID du patient
-  scheduledTime: string;          // Heure prévue
-  takenTime?: string;             // Heure réelle de prise
-  status: 'pending' | 'taken' | 'missed';  // Statut de la prise
-  notes?: string;                 // Notes (ex: "Pris avec du lait")
-}

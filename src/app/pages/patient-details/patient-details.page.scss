@@ -87,5 +87,12 @@
       margin: 4px 0;
       font-size: 13px;
     }
+
+    .hours-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 6px;
+    }
   }
 }
